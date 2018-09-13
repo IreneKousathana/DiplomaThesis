@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trend Summary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href={{url_for('main')}}>Tweet Opinion</a>
+    </div>
+
+  </div>
+</nav>
+
+<div class="text-center">
+  <h1>Summary on {{trend[0]}}:</h1>
+    <div id = "chart" class="container-fluid"> </div>
+
+<div class="panel panel-default">
+          <div class="panel-body">
+              <ul class="list-group">
+               {% for entity in entities %}
+                  <li class="list-group-item"><h4>{{entity[0]}}<small>{{entity [1]}}</small></h4> </li>
+              {% endfor %}
+              </ul>
+
+          </div>
+      </div>
+      </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.js"></script>
+<script>
+        (function() {
+        var width = 800,
+        height = 600;
+
+  var svg = d3.select("#chart")
+        .append("svg")
+        .attr("height", height)
+        .attr("width", width)
+        .append("g")
+        .attr("transform", "translate(0,0)")
+
+
+  var simulation = d3.forceSimulation()
+    .force("x", d3.forceX(width/2).strength(0.05))
+    .force("y", d3.forceY(height/2).strength(0.05))
+    .force("collide", d3.forceCollide( function(d){
+  	         return radiusScale(d["Count"] )
+  	     }))
+
+
+  var datapoints = {{chart_data|safe}}
+  var count = [ ]
+  $.each(datapoints, function(key, ob){
+    count.push(key)
+  })
+
+
+  var radiusScale = d3.scaleSqrt()
+        .domain([d3.min(count),d3.max(count)])
+        .range([20,30])
+
+
+  var circles = svg.selectAll(".entity")
+  	     .data(datapoints)
+  	     .enter().append("circle")
+  	     .attr("class", "entity")
+  	     .attr("r", function(d){
+  	         return radiusScale(d["Count"])
+  	     })
+  	     .attr("fill", "lightblue")
+  	     .on('click', function(d){
+  	        console.log(d)
+  	     })
+  var texts = svg.selectAll(null)
+        .data(datapoints)
+        .enter().append("text")
+        .text(function(d){
+            return d["Entity"]
+        })
+        .attr('color', 'black')
+        .attr('font-size',11)
+        .attr("text-anchor", "middle")
+
+  simulation.nodes(datapoints)
+  	    .on('tick', ticked)
+
+  function ticked() {
+  	    circles
+  	        .attr("cx", function(d){
+  	            return d.x;
+  	        })
+  	        .attr("cy", function(d){
+  	            return d.y;
+  	        })
+
+  	    texts
+  	        .attr("x", function(d){
+  	            return d.x;
+  	        })
+  	        .attr("y", function(d){
+  	            return d.y;
+  	        });
+  	}
+  }
+
+
+)();
+    </script>
+
+</body>
+</html>
